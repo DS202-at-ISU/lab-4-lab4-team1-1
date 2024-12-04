@@ -10,6 +10,7 @@ knitr::opts_chunk$set(echo = TRUE)
 ```
 
 ## Amaya's Lab Progress 
+
 ```{r}
 # Load necessary libraries
 library(rvest)
@@ -25,10 +26,29 @@ url <- "https://www.baseball-reference.com/awards/hof_2024.shtml"
 # Read the webpage
 webpage <- read_html(url)
 
-# Extract the table
+# Extract the first table
 hof_table <- webpage %>% html_node("table") %>% html_table()
 
 # Preview the scraped table
 head(hof_table)
+```
+
+```{r}
+# Inspect the structure of the table
+str(hof_table)
+
+# Preview the first few rows
+head(hof_table)
+
+# Check the exact column names
+colnames(hof_table)
+```
+
+```{r}
+# Clean column names by trimming spaces
+colnames(hof_table) <- str_trim(colnames(hof_table))
+
+# Check the cleaned column names
+colnames(hof_table)
 ```
 
