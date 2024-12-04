@@ -1,0 +1,102 @@
+---
+title: "Amaya_Bayoumi_Lab4"
+author: "Amaya Bayoumi Brooks"
+date: "2024-12-04"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## Amaya's Lab Progress 
+
+```{r}
+# Load necessary libraries
+library(rvest)
+library(dplyr)
+library(stringr)
+library(janitor)
+library(knitr)
+library(ggplot2)
+library(Lahman)
+
+# Scrape the Hall of Fame table
+url <- "https://www.baseball-reference.com/awards/hof_2024.shtml"
+webpage <- read_html(url)
+hof_table <- webpage %>% html_node("table") %>% html_table()
+
+# Inspect raw data
+str(hof_table)
+head(hof_table)
+colnames(hof_table)
+```
+
+```{r}
+# Clean column names
+hof_table <- hof_table %>% clean_names()
+
+# Check cleaned column names
+colnames(hof_table)
+
+# Rename and transform columns to match HallOfFame structure
+hof_cleaned <- hof_table %>%
+  rename(
+    playerID = x_2,  # Player Name
+    yearID = x_3,    # Year on Ballot
+    votes = x_4,     # Votes
+    needed = x_5     # Percent Votes
+  ) %>%
+  mutate(
+    yearID = 2024,  # Set the year to 2024
+    needed = as.numeric(str_remove(needed, "%")),  # Convert percentage to numeric
+    votes = as.numeric(votes),  # Convert votes to numeric
+    ballots = max(votes, na.rm = TRUE),  # Calculate total ballots
+    inducted = ifelse(needed >= 75, "Y", "N"),  # Determine induction
+    category = "Player",  # Assume Player category
+    votedBy = "BBWAA",    # Voting group
+    needed_note = NA      # Placeholder for needed_note
+  ) %>%
+  select(playerID, yearID, votedBy, ballots, needed, votes, inducted, category, needed_note)
+
+# Inspect cleaned data
+str(hof_cleaned)
+head(hof_cleaned)
+```
+
+```{r}
+# Append cleaned data to existing HallOfFame dataset
+updated_hof <- HallOfFame %>%
+  bind_rows(hof_cleaned)
+
+# Verify the updated dataset
+str(updated_hof)
+summary(updated_hof)
+
+# Save updated dataset to a CSV file
+write.csv(updated_hof, "updated_hall_of_fame.csv", row.names = FALSE)
+```
+
+```{r}
+# Create a bar chart of Hall of Fame inductions by year
+updated_hof %>%
+  ggplot(aes(x = yearID, fill = inducted)) +
+  geom_bar() +
+  xlim(c(1936, 2024)) +
+  scale_fill_manual(values = c("Y" = "blue", "N" = "red")) +
+  labs(
+    title = "Hall of Fame Inductions Over Time",
+    x = "Year",
+    y = "Count",
+    fill = "Inducted"
+  ) +
+  theme_minimal()
+```
+
+#End of Amaya's Portion
+
+
+
+
+
+
