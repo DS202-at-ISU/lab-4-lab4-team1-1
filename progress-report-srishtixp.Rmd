@@ -1,0 +1,30 @@
+---
+title: "progress-report-srishtixp"
+output: html_document
+date: "2024-12-04"
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## R Markdown
+```{r}
+library(rvest)
+library(dplyr)
+library(ggplot2)
+```
+```{r}
+URL <- "https://www.baseball-reference.com/awards/hof_2024.shtml"
+
+# Read the webpage
+page <- read_html(URL)
+
+# Extract the table
+table <- page %>%
+  html_node("table") %>% # Find the first table on the page
+  html_table(fill = TRUE)
+
+# Preview the scraped data
+head(table)
+```
