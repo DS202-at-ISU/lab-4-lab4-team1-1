@@ -9,3 +9,122 @@ output: html_document
 knitr::opts_chunk$set(echo = TRUE)
 ```
 
+``` {r}
+# Load necessary libraries
+library(rvest)
+library(dplyr)
+library(readr)
+
+# Define the URL
+url <- "https://www.baseball-reference.com/awards/hof_2024.shtml"
+
+# Read the webpage content
+webpage <- read_html(url)
+
+# Extract the tables from the webpage
+tables <- html_table(webpage, fill = TRUE)
+
+# Extract the first table (assuming it's the required one)
+data <- tables[[1]]
+
+
+
+```
+
+
+``` {r}
+# Set the first row as column names
+actual_col_names <- data[1, ]
+colnames(data) <- actual_col_names
+
+# Remove the first row (now used as column names)
+data <- data[-1, ]
+
+# Preview the cleaned column names and data
+head(data, 3)
+#View(data)
+
+
+```
+
+
+
+``` {r}
+
+colnames(data)
+
+
+# Assign unique column names
+colnames(data) <- make.names(colnames(data), unique = TRUE)
+
+# OR manually rename columns
+colnames(data) <- c("Rk", "Name", "YoB", "Votes", "Percent", "HOFm", "HOFs", "Yrs",
+                    "WAR", "WAR7", "JAWS", "Jpos", "G_batting", "AB", "R_batting",
+                    "H_batting", "HR_batting", "RBI", "SB", "BB_batting", "BA",
+                    "OBP", "SLG", "OPS", "OPS_plus", "W_pitching", "L", "ERA",
+                    "ERA_plus", "WHIP", "G_pitching", "GS", "SV", "IP", "H_pitching",
+                    "HR_pitching", "BB_pitching", "SO", "Pos_Summary")
+
+
+
+# Select and transform relevant columns
+data_cleaned <- data %>%
+  transmute(
+    playerID = Name,                # Use 'Name' as 'playerID'
+    yearID = 2024,                  # Set the year to 2024
+    votedBy = "BBWAA",              # Specify the voting body
+    ballots = max(as.numeric(Votes), na.rm = TRUE), # Use max Votes as total ballots
+    needed = 75,                    # Set needed percentage for induction
+    votes = as.numeric(gsub(",", "", Votes)), # Remove commas and convert to numeric
+    inducted = ifelse(parse_number(Percent) >= 75, "Y", "N"), # Inducted if Percent >= 75
+    category = "Player",            # Assume all entries are players
+    needed_note = NA                # No additional notes
+  )
+
+
+
+```
+
+
+
+
+``` {r}
+# Load the Lahman package and `HallOfFame` data
+library(Lahman)
+current_hof <- as.data.frame(HallOfFame)
+
+# Verify column names
+print(colnames(current_hof))
+print(colnames(data_cleaned))
+
+# Ensure column names match exactly
+colnames(data_cleaned) <- colnames(current_hof)
+
+
+
+```
+
+
+
+
+``` {r}
+# Combine the datasets
+updated_hof <- rbind(current_hof, data_cleaned)
+
+# Preview the updated dataset
+tail(updated_hof)
+
+
+
+```
+
+
+
+``` {r}
+write.csv(updated_hof, file = "HallOfFame_updated.csv", row.names = FALSE)
+
+# Alternatively, use `write_csv` for better handling of special characters
+write_csv(updated_hof, file = "HallOfFame_updated_fast.csv")
+
+
+```
