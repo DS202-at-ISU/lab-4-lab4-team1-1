@@ -1,0 +1,34 @@
+---
+title: "Amaya_Bayoumi_Lab4"
+author: "Amaya Bayoumi Brooks"
+date: "2024-12-04"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## Amaya's Lab Progress 
+```{r}
+# Load necessary libraries
+library(rvest)
+library(dplyr)
+library(stringr)
+library(knitr)
+```
+
+```{r}
+# Define the URL
+url <- "https://www.baseball-reference.com/awards/hof_2024.shtml"
+
+# Read the webpage
+webpage <- read_html(url)
+
+# Extract the table
+hof_table <- webpage %>% html_node("table") %>% html_table()
+
+# Preview the scraped table
+head(hof_table)
+```
+

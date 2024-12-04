@@ -1,0 +1,11 @@
+---
+title: "progress-report-<Amaya-Bayoumi>.Rmd"
+author: "Amaya Bayoumi Brooks"
+date: "2024-12-04"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
