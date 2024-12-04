@@ -121,10 +121,10 @@ tail(updated_hof)
 
 
 ``` {r}
-write.csv(updated_hof, file = "HallOfFame_updated.csv", row.names = FALSE)
+write.csv(updated_hof, file = "MatthewHallOfFame_updated.csv", row.names = FALSE)
 
 # Alternatively, use `write_csv` for better handling of special characters
-write_csv(updated_hof, file = "HallOfFame_updated_fast.csv")
+write_csv(updated_hof, file = "MatthewHallOfFame_updated_fast.csv")
 
 
 ```
