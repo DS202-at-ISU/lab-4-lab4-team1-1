@@ -1,0 +1,97 @@
+---
+title: "progress-report-<Meghasyam-23>.Rmd"
+author: "Meghasyam Peddireddy"
+date: "2024-12-09"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+``` {r}
+# Load required packages
+library(rvest)
+library(dplyr)
+library(readr)
+library(Lahman)
+
+# Define the URL
+url <- "https://www.baseball-reference.com/awards/hof_2024.shtml"
+
+# Read and parse the HTML
+html <- read_html(url)
+tables <- html_table(html)
+hof_data <- tables[[1]]
+
+# Check column names before cleaning
+print("Original column names:")
+print(colnames(hof_data))
+
+```
+
+``` {r}
+# Clean the data
+# 1. Fix column names and remove duplicates
+actual_col_names <- make.unique(as.character(hof_data[1, ]))
+colnames(hof_data) <- actual_col_names
+hof_data <- hof_data[-1, ]
+
+# Check column names after cleaning
+print("New column names:")
+print(colnames(hof_data))
+```
+
+
+``` {r}
+# 2. Clean and process the data to match HallOfFame format
+cleaned_data <- hof_data %>%
+  transmute(
+    playerID = NA,  # We'll need to match this with Lahman database
+    yearID = 2024,  # Current year
+    votedBy = "BBWAA",  # Baseball Writers' Association of America
+    ballots = max(as.numeric(parse_number(Votes))), # Total ballots cast
+    needed = ceiling(ballots * 0.75),  # 75% needed for induction
+    votes = as.numeric(parse_number(Votes)),
+    inducted = ifelse(parse_number(`%vote`) >= 75, "Y", "N"),
+    category = "Player",
+    needed_note = "<"
+  )
+
+# View the structure of both datasets to confirm they match
+str(HallOfFame)
+str(cleaned_data)
+```
+
+``` {r}
+# Combine with existing HallOfFame data
+combined_hof <- rbind(HallOfFame, cleaned_data)
+```
+
+``` {r}
+# Export the combined dataset
+write_csv(combined_hof, "HallOfFame.csv", na = "")
+```
+
+
+``` {r}
+# Create a visualization to verify the data
+library(ggplot2)
+
+combined_hof %>%
+  ggplot(aes(x = yearID, fill = inducted)) +
+  geom_bar() +
+  xlim(c(1936, 2024)) +
+  theme_minimal() +
+  labs(title = "Hall of Fame Voting Results (1936-2024)",
+       x = "Year",
+       y = "Count",
+       fill = "Inducted")
+
+# Print summary of 2024 inductees
+cat("\n2024 Hall of Fame Inductees:\n")
+cleaned_data %>%
+  filter(inducted == "Y") %>%
+  select(votes, inducted) %>%  # Fixed typo: 'induced' to 'inducted'
+  print()
+```
